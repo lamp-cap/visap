@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+        <title>threejs加载obj模型</title>
+
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            #webgl {
+                width: 100%;
+                height: 100vh;
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+ 
+        <div id="webgl"></div>
+        
+        <script type="module">
+            import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
+            import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
+            import { OBJLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/OBJLoader";
+            // import { FBXLoader } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/FBXLoader.js';
+            // 获取渲染容器
+            let webgl = document.getElementById("webgl");
+            
+            // 获取渲染容器的宽高
+            let webglWidth = webgl.offsetWidth;
+            let webglHeight = webgl.offsetHeight;
+            
+            // 创建场景
+            let scene = new THREE.Scene();
+
+            scene.background = new THREE.Color(0x0dc3a1)
+            
+            // 设置环境光（十六进制颜色）
+            let ambient = new THREE.AmbientLight(0x5588ff);
+            
+            // 将环境光添加到场景中
+            scene.add(ambient);
+            
+            // 设置点光源（十六进制颜色）
+            let point = new THREE.PointLight(0xff8888);
+            
+            // 设置点光源的位置（x轴, y轴, z轴）
+            point.position.set(400, 200, 300); 
+            
+            // 将点光源添加到场景中
+            scene.add(point);
+            
+            // 创建透视相机（角度, 宽高比, 最近距离, 最远距离）
+            let camera = new THREE.PerspectiveCamera(60,webglWidth/webglHeight,0.1,2000);
+            
+            // 设置相机的位置（x轴, y轴, z轴）
+            camera.position.set(10, 10, 10); 
+            
+            // 将相机指向场景中心
+            camera.lookAt(scene.position);
+            
+            // 创建渲染器
+            let renderer = new THREE.WebGLRenderer();
+            
+            // 设置渲染器的初始颜色（十六进制颜色, 透明度）
+            renderer.setClearColor(0xEEEEEE,1);
+            
+            // 设置渲染器大小（标签宽度, 标签高度）
+            renderer.setSize(webglWidth,webglHeight);
+            
+            // 将渲染器添加到渲染容器中（渲染器元素）
+            webgl.appendChild(renderer.domElement);
+
+            renderer.setFaceCulling(THREE.CullFaceNone, THREE.FrontFaceDirectionCCW);
+            
+            // 创建渲染函数
+            
+            
+            // 设置窗口变化自适应调整事件
+            window.onresize = function(){
+                
+                // 重新获取渲染容器的宽高
+                webglWidth = webgl.offsetWidth;
+                webglHeight = webgl.offsetHeight;
+                
+                // 重置渲染器canvas画布大小
+                renderer.setSize(webglWidth,webglHeight);
+                
+                // 重置相机显示范围的宽高比
+                camera.aspect = webglWidth/webglHeight;
+              
+                // 更新相机的投影矩阵
+                camera.updateProjectionMatrix();
+                
+                // 重新调用渲染函数
+                render();
+            };
+
+            let controls = new OrbitControls(camera, renderer.domElement)
+            // 开启阻尼效果
+            // controls.enableDamping = true
+            // 禁用面板
+            // controls.enablePan;
+
+            var loader = new OBJLoader();
+            loader.load( './assets/visap1.obj', function ( object ) {
+                let texture = new THREE.TextureLoader().load('./assets/vis1.jpg',function(){
+                    render(); // 加载成功后重新调用渲染函数
+                });
+                
+                // 给 OBJ 模型设置纹理贴图
+                object.children[0].material = new THREE.MeshBasicMaterial({ map: texture });
+
+                //缩放
+                object.scale.set(1, 1, 1);
+                //位置
+                object.position.set(0, 0, 0);
+                scene.add( object ); 
+            } );
+
+            function render() {
+                requestAnimationFrame( render );        
+                renderer.render( scene, camera );
+            }
+            render();
+            
+        </script>
+        <!-- <div style="
+            position: absolute;
+            height: 800px;
+            width: 400px;
+            top: -10px;
+            right: 0px;
+            background-color: antiquewhite;
+        ">
+        </div> -->
+ 
+    </body>
+</html>
